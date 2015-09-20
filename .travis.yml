@@ -1,0 +1,21 @@
+branches:
+  only:
+    - master
+
+language: python
+python:
+  - "2.7"
+  - "3.4"
+# TBD after fix https://bitbucket.org/pytest-dev/pytest/pull-request/296/astcall-signature-changed-on-35/diff
+#  - "nightly"
+
+install:
+  - pip install -U -r test_requirements.txt
+
+before_script:
+  - pip install -U -e .
+script:
+  - py.test tests --doctest-modules --pep8 aorn -v --cov aorn --cov-report term-missing
+after_success:
+  - coveralls
+
