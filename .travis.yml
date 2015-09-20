@@ -10,12 +10,13 @@ python:
 #  - "nightly"
 
 install:
+  - pip install -U pip
   - pip install -U -r test_requirements.txt
 
 before_script:
   - pip install -U -e .
 script:
-  - py.test tests --doctest-modules --pep8 aorn -v --cov aorn --cov-report term-missing
+  - py.test tests --doctest-modules --pep8 qeez_stats -v --cov qeez_stats --cov-report term-missing
 after_success:
   - coveralls
 
