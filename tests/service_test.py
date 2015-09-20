@@ -15,6 +15,7 @@ from binascii import crc32
 from functools import partial
 
 import pytest
+import six
 from mockredis import mock_strict_redis_client
 
 from qeez_stats import service
@@ -63,7 +64,7 @@ def test_internal_server_error(client):
 
 def test_stats_put(client):
     _data = b'["a", "b"]'
-    checksum = bytes('%08x' % crc32(_data), encoding='utf-8')
+    checksum = six.text_type('%08x' % crc32(_data))
     resp = client.put('/stats/put/test_123', data=_data,
                       content_type='application/json')
     assert resp.data == b'{"checksum": "' + checksum + b'", "error": false}'
@@ -71,7 +72,7 @@ def test_stats_put(client):
 
 def test_stats_mput(client):
     _data = b'[["c", "d"],["e", "f"]]'
-    checksum = bytes('%08x' % crc32(_data), encoding='utf-8')
+    checksum = six.text_type('%08x' % crc32(_data))
     resp = client.put('/stats/mput/test_123', data=_data,
                       content_type='application/json')
     assert resp.data == b'{"checksum": "' + checksum + b'", "error": false}'
