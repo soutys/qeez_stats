@@ -11,14 +11,22 @@ from __future__ import (
     with_statement,
 )
 
+import sys
 from binascii import crc32
 from functools import partial
 
 import pytest
-import six
 from mockredis import mock_strict_redis_client
 
 from qeez_stats import service
+
+
+if sys.version_info > (3,):
+    def to_bytes(str_buf):
+        return bytes(str_buf, encoding='utf-8')
+else:
+    def to_bytes(str_buf):
+        return bytes(str_buf)
 
 
 def _get_redis():
@@ -64,15 +72,17 @@ def test_internal_server_error(client):
 
 def test_stats_put(client):
     _data = b'["a", "b"]'
-    checksum = six.text_type('%08x' % crc32(_data))
+    checksum = '%08x' % crc32(_data)
     resp = client.put('/stats/put/test_123', data=_data,
                       content_type='application/json')
-    assert resp.data == b'{"checksum": "' + checksum + b'", "error": false}'
+    assert resp.data == \
+        to_bytes('{"checksum": "%s", "error": false}' % checksum)
 
 
 def test_stats_mput(client):
     _data = b'[["c", "d"],["e", "f"]]'
-    checksum = six.text_type('%08x' % crc32(_data))
+    checksum = '%08x' % crc32(_data)
     resp = client.put('/stats/mput/test_123', data=_data,
                       content_type='application/json')
-    assert resp.data == b'{"checksum": "' + checksum + b'", "error": false}'
+    assert resp.data == \
+        to_bytes('{"checksum": "%s", "error": false}' % checksum)
