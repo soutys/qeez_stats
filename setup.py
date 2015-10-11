@@ -14,8 +14,9 @@ from __future__ import (
 
 import os
 
-from distutils.core import setup
-from pkgutil import walk_packages
+#from distutils.core import setup
+#from pkgutil import walk_packages
+from setuptools import setup, find_packages
 
 
 WORK_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -41,13 +42,13 @@ PKG_LICENSE_NAME = PKG_LICENSE_FULL[0].strip()
 PKG_REQS = open(os.path.join(WORK_DIR, 'requirements.txt')).readlines()
 
 
-# http://stackoverflow.com/a/12966345
-def find_packages(path='.', prefix=''):
-    yield prefix
-    prefix = prefix + '.'
-    for _, name, ispkg in walk_packages(path, prefix):
-        if ispkg:
-            yield name
+## http://stackoverflow.com/a/12966345
+#def find_packages(path='.', prefix=''):
+#    yield prefix
+#    prefix = prefix + '.'
+#    for _, name, ispkg in walk_packages(path, prefix):
+#        if ispkg:
+#            yield name
 
 
 setup(
@@ -62,12 +63,14 @@ setup(
     long_description=PKG_DESC_LONG,
     classifiers=PKG_CLASSIFIERS,
     install_requires=PKG_REQS,
-    packages=list(find_packages(WORK_DIR, PKG_MOD.__name__)),
+    #packages=list(find_packages(WORK_DIR, PKG_MOD.__name__)),
+    packages=find_packages(),
     license=PKG_LICENSE_NAME,
     zip_safe=False,
     include_package_data=True,
     package_data = {
-        PKG_NAME: ['VERSION'],
+        #PKG_NAME: ['VERSION'],
+        '': ['VERSION'],
     },
     keywords='redis statistics',
     test_suite='tests',
