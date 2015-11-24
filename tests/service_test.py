@@ -19,14 +19,9 @@ import pytest
 from mockredis import mock_strict_redis_client
 
 from qeez_stats import service
+from qeez_stats.utils import to_bytes
 
-
-if sys.version_info > (3,):
-    def to_bytes(str_buf):
-        return bytes(str_buf, encoding='utf-8')
-else:
-    def to_bytes(str_buf):
-        return bytes(str_buf)
+from .config import CFG
 
 
 def _get_redis():
@@ -46,7 +41,7 @@ def client(request):
 
 def test_get_redis():
     with service.APP.app_context():
-        service.get_redis()
+        service.get_redis(CFG['STAT_REDIS'])
 
 
 def test_not_found(client):
