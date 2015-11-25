@@ -13,20 +13,29 @@ from __future__ import (
 
 import logging
 
-from qeez_stats.config import CFG
 from qeez_stats.utils import (
     decode_raw_packets,
     retrieve_packets,
+    retrieve_set,
+    update_set,
 )
 
 
 LOG = logging.getLogger(__name__)
 
 
+def stat_collector(stat, stat_token):
+    '''Collects stat usage
+    '''
+    update_set(stat, stat_token)
+    return retrieve_set(stat)
+
+
 def avg_resp_time(qeez_token):
     '''Calculates average response time
     '''
     raw_packets = retrieve_packets(qeez_token)
+    LOG.error('raw_packets(art): %s', repr(raw_packets))
     packets = decode_raw_packets(raw_packets)
 
     resp_time_sum = 0.0
@@ -42,6 +51,7 @@ def tops_of_locs(qeez_token):
     '''Calculates TOP-10 of locs with % of positive points
     '''
     raw_packets = retrieve_packets(qeez_token)
+    print('raw_packets(tol):', repr(raw_packets))
     packets = decode_raw_packets(raw_packets)
 
     per_loc = {}

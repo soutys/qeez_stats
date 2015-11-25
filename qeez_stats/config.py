@@ -11,15 +11,15 @@ from __future__ import (
     with_statement,
 )
 
-import logging
+#import logging
 
 
-LOG = logging.getLogger(__name__)
+#LOG = logging.getLogger(__name__)
 
 CFG = dict(
-    DEBUG=True,
+    DEBUG=False,
     HOST='127.0.0.1',
-    PORT=8081,
+    PORT=9100,
     JSONIFY_PRETTYPRINT_REGULAR=False,
     STAT_REDIS={
         'SOCKET': '/tmp/redis.sock',
