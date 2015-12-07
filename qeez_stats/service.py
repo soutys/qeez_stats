@@ -22,6 +22,7 @@ from flask.json import jsonify
 
 from qeez_stats.config import CFG
 from qeez_stats.queues import (
+    enqueue_stat_save,
     enqueue_stat_calc,
     pull_all_stat_res,
     pull_stat_res,
@@ -31,7 +32,7 @@ from qeez_stats.utils import (
     calc_checksum,
     get_redis,
     packet_split,
-    save_packets,
+    save_packets_to_stat,
 )
 
 
@@ -76,8 +77,15 @@ def get_queue_redis():
     return top.queue_redis
 
 
+def _save_packets(qeez_token, res_dc):
+    '''Saves data packets (to all possible DBs)
+    '''
+    save_packets_to_stat(qeez_token, res_dc, redis_conn=get_stat_redis())
+    enqueue_stat_save(qeez_token, res_dc, redis_conn=get_queue_redis())
+
+
 def _save_data(qeez_token, packets):
-    '''Parses and saves data packets to stat redis
+    '''Parses and saves data packets
     '''
     res_dc = {}
     for packet in packets:
@@ -87,7 +95,7 @@ def _save_data(qeez_token, packets):
                 res_dc[key] = val
 
     if res_dc:
-        save_packets(qeez_token, res_dc, redis_conn=get_stat_redis())
+        _save_packets(qeez_token, res_dc)
         return True
     return False
 
@@ -129,6 +137,7 @@ def _process_data(req, qeez_token, multi_data=None, recalc=None):
     stat = None
     if isinstance(_json, dict):
         stat = _json.get('stat')
+        _json = _json.get('data')
     if multi_data is True:
         json_data = _json
     else:

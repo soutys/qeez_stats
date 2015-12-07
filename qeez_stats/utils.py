@@ -116,7 +116,7 @@ def decode_raw_packets(raw_packets):
     return [decode_raw_packet(raw_packet) for raw_packet in raw_packets.items()]
 
 
-def save_packets(qeez_token, res_dc, redis_conn=None):
+def save_packets_to_stat(qeez_token, res_dc, redis_conn=None):
     '''Saves packets
     '''
     if redis_conn is None:

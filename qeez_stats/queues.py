@@ -31,6 +31,18 @@ COLL_ID_FMT = 'stat:%s'
 STAT_ID_FMT = 'stat:%s:%s'
 
 
+def enqueue_stat_save(qeez_token, res_dc, redis_conn=None):
+    '''Enqueues stat for save
+    '''
+    if redis_conn is None:
+        redis_conn = get_redis(CFG['QUEUE_REDIS'])
+    queue = Queue('save', connection=redis_conn)
+    from qeez.api.models import stat_data_save
+    return queue.enqueue(
+        stat_data_save, args=(qeez_token, res_dc), timeout=30, result_ttl=-1,
+        ttl=-1)
+
+
 def enqueue_stat_calc(stat, qeez_token, redis_conn=None):
     '''Enqueues stat for calc
     '''
@@ -39,7 +51,7 @@ def enqueue_stat_calc(stat, qeez_token, redis_conn=None):
     if redis_conn is None:
         redis_conn = get_redis(CFG['QUEUE_REDIS'])
     stat_token = STAT_ID_FMT % (stat, qeez_token)
-    queue = Queue(connection=redis_conn)
+    queue = Queue('calc', connection=redis_conn)
     stat_append = queue.enqueue_call(
         func=stat_collector, args=(stat, stat_token), timeout=30, result_ttl=-1,
         ttl=-1, job_id=COLL_ID_FMT % stat)
@@ -56,7 +68,7 @@ def pull_stat_res(stat, qeez_token, redis_conn=None):
         return
     if redis_conn is None:
         redis_conn = get_redis(CFG['QUEUE_REDIS'])
-    queue = Queue(connection=redis_conn)
+    queue = Queue('calc', connection=redis_conn)
     job = queue.fetch_job(STAT_ID_FMT % (stat, qeez_token))
     res = None
     if job is not None:
@@ -74,7 +86,7 @@ def pull_all_stat_res(stat, redis_conn=None):
         return
     if redis_conn is None:
         redis_conn = get_redis(CFG['QUEUE_REDIS'])
-    queue = Queue(connection=redis_conn)
+    queue = Queue('calc', connection=redis_conn)
     job = queue.fetch_job(COLL_ID_FMT % stat)
     res = None
     if job is None:
