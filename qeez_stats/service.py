@@ -128,28 +128,24 @@ def internal_server_error(_):
     return _json_response({'error': True, 'status': 500}, status=500)
 
 
-def _process_data(req, qeez_token, multi_data=None, recalc=None):
+def _process_data(req, qeez_token, multi_data=None, stat=None):
     '''Processes data packets, returns response objects
     '''
     if not req.json:
         return bad_request(None)
     _json = req.get_json()
-    stat = None
-    if isinstance(_json, dict):
-        stat = _json.get('stat')
-        _json = _json.get('data')
     if multi_data is True:
         json_data = _json
     else:
         json_data = [_json]
-    if recalc is True and stat not in STATS_MAP:
+    if stat is not None and stat not in STATS_MAP:
         return not_found(None)
     checksum = calc_checksum(req.data)
     if _save_data(qeez_token, json_data):
         resp = {
             'error': False,
             'checksum': checksum}
-        if recalc is True:
+        if stat is not None:
             job = enqueue_stat_calc(stat, qeez_token, redis_conn=get_queue_redis())
             resp['job_id'] = job.id
         return _json_response(resp)
@@ -160,41 +156,37 @@ def _process_data(req, qeez_token, multi_data=None, recalc=None):
 def stats_mput(qeez_token=None):
     '''PUT view to handle multiple packets at a time
     '''
-    return _process_data(request, qeez_token, multi_data=True, recalc=False)
+    return _process_data(request, qeez_token, multi_data=True, stat=False)
 
 
 @APP.route('/stats/put/<qeez_token>', methods=['PUT'])
 def stats_put(qeez_token=None):
     '''PUT view to handle one packet at a time
     '''
-    return _process_data(request, qeez_token, multi_data=False, recalc=False)
+    return _process_data(request, qeez_token, multi_data=False, stat=False)
 
 
-@APP.route('/stats/ar_mput/<qeez_token>', methods=['PUT'])
-def stats_ar_mput(qeez_token=None):
+@APP.route('/stats/ar_mput/<stat>/<qeez_token>', methods=['PUT'])
+def stats_ar_mput(stat=None, qeez_token=None):
     '''PUT view to handle multiple packets at a time with auto-recalculation
     '''
-    return _process_data(request, qeez_token, multi_data=True, recalc=True)
+    return _process_data(request, qeez_token, multi_data=True, stat=stat)
 
 
-@APP.route('/stats/ar_put/<qeez_token>', methods=['PUT'])
-def stats_ar_put(qeez_token=None):
+@APP.route('/stats/ar_put/<stat>/<qeez_token>', methods=['PUT'])
+def stats_ar_put(stat=None, qeez_token=None):
     '''PUT view to handle one packet at a time with auto-recalculation
     '''
-    return _process_data(request, qeez_token, multi_data=False, recalc=True)
+    return _process_data(request, qeez_token, multi_data=False, stat=stat)
 
 
-@APP.route('/stats/proc_enq/<qeez_token>', methods=['PUT'])
-def stats_proc_enq(qeez_token=None):
+@APP.route('/stats/proc_enq/<stat>/<qeez_token>', methods=['PUT'])
+def stats_proc_enq(stat=None, qeez_token=None):
     '''PUT view to enqueue selected stat processing
     '''
-    if not request.json:
-        return bad_request(None)
-    json_data = request.get_json()
-    checksum = calc_checksum(request.data)
-    stat = json_data.get('stat')
     if stat not in STATS_MAP:
         return not_found(None)
+    checksum = calc_checksum(request.data)
     job = enqueue_stat_calc(stat, qeez_token, redis_conn=get_queue_redis())
     return _json_response({
         'error': False,
