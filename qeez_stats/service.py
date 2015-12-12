@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 '''Qeez statistics service module
+
+$ pip install -U .
+$ python -m qeez_stats.service
 '''
 
 from __future__ import (
@@ -13,22 +16,29 @@ from __future__ import (
 )
 
 import logging
-from zlib import crc32
+from time import gmtime
 
 from flask import Flask, _app_ctx_stack, request
 from flask.json import jsonify
-from redis import StrictRedis
+
+from qeez_stats.config import CFG
+from qeez_stats.queues import (
+    enqueue_stat_save,
+    enqueue_stat_calc,
+    pull_all_stat_res,
+    pull_stat_res,
+)
+from qeez_stats.stats import STATS_MAP
+from qeez_stats.utils import (
+    calc_checksum,
+    get_redis,
+    packet_split,
+    save_packets_to_stat,
+)
 
 
 APP = Flask(__name__)
-APP.config.update(
-    DEBUG=False,
-    JSONIFY_PRETTYPRINT_REGULAR=False,
-    REDIS={
-        'SOCKET': '/tmp/redis.sock',
-        'DB': 0,
-    },
-)
+APP.config.update(CFG)
 LOG_HNDLR = logging.StreamHandler()
 LOG_HNDLR.setLevel(logging.NOTSET if APP.debug else logging.ERROR)
 LOG_HNDLR.setFormatter(
@@ -37,6 +47,8 @@ LOG_HNDLR.setFormatter(
             ' %(levelname)s %(module)s:%(lineno)s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'))
 APP.logger.addHandler(LOG_HNDLR)
+
+#LOG = logging.getLogger(__name__)
 
 
 def _json_response(data_dc, status=200):
@@ -48,36 +60,55 @@ def _json_response(data_dc, status=200):
     return resp
 
 
-def _calc_checksum(data):
-    '''Calculates CRC32 checksum
-    '''
-    return '%08x' % crc32(data)
-
-
-def get_redis():
-    '''Instantiates and returns redis client
+def get_stat_redis():
+    '''Instantiates and returns stat redis client
     '''
     top = _app_ctx_stack.top
-    if not hasattr(top, 'redis'):
-        top.redis = StrictRedis(
-            unix_socket_path=APP.config['REDIS']['SOCKET'],
-            db=APP.config['REDIS']['DB'])
-    return top.redis
+    if not hasattr(top, 'stat_redis'):
+        top.stat_redis = get_redis(APP.config['STAT_REDIS'])
+    return top.stat_redis
+
+
+def get_queue_redis():
+    '''Instantiates and returns queue redis client
+    '''
+    top = _app_ctx_stack.top
+    if not hasattr(top, 'queue_redis'):
+        top.queue_redis = get_redis(APP.config['QUEUE_REDIS'])
+    return top.queue_redis
+
+
+def get_save_redis():
+    '''Instantiates and returns save redis client
+    '''
+    top = _app_ctx_stack.top
+    if not hasattr(top, 'save_redis'):
+        top.save_redis = get_redis(APP.config['SAVE_REDIS'])
+    return top.save_redis
+
+
+def _save_packets(qeez_token, res_dc):
+    '''Saves data packets (to all possible DBs)
+    '''
+    save_packets_to_stat(qeez_token, res_dc, redis_conn=get_stat_redis())
+    enqueue_stat_save(
+        qeez_token, res_dc, atime=gmtime(), redis_conn=get_save_redis())
 
 
 def _save_data(qeez_token, packets):
-    '''Parses and saves data packets to redis
+    '''Parses and saves data packets
     '''
     res_dc = {}
     for packet in packets:
         if isinstance(packet, list) and len(packet) == 2:
-            # packet = ('grp_id:loc_id:cmp_id:stp_id:gmr_id',
-            #    'ans_val:ans_tim:pts')
             key, val = packet
-            res_dc[key] = val
+            if packet_split(key, val):
+                res_dc[key] = val
 
     if res_dc:
-        get_redis().hmset('_tokens:' + qeez_token, res_dc)
+        _save_packets(qeez_token, res_dc)
+        return True
+    return False
 
 
 @APP.errorhandler(404)
@@ -108,36 +139,98 @@ def internal_server_error(_):
     return _json_response({'error': True, 'status': 500}, status=500)
 
 
-def _process_data(req, qeez_token, multi_data=True):
+def _process_data(req, qeez_token, multi_data=None, stat=None):
     '''Processes data packets, returns response objects
     '''
     if not req.json:
         return bad_request(None)
-    if multi_data:
-        json_data = req.get_json()
+    _json = req.get_json()
+    if multi_data is True:
+        json_data = _json
     else:
-        json_data = [req.get_json()]
-    checksum = _calc_checksum(req.data)
-    _save_data(qeez_token, json_data)
-    return _json_response({
-        'error': False,
-        'checksum': checksum,
-    })
+        json_data = [_json]
+    if stat is not None and stat not in STATS_MAP:
+        return not_found(None)
+    checksum = calc_checksum(req.data)
+    if _save_data(qeez_token, json_data):
+        resp = {
+            'error': False,
+            'checksum': checksum}
+        if stat is not None:
+            job = enqueue_stat_calc(stat, qeez_token, redis_conn=get_queue_redis())
+            resp['job_id'] = job.id
+        return _json_response(resp)
+    return bad_request(None)
 
 
 @APP.route('/stats/mput/<qeez_token>', methods=['PUT'])
 def stats_mput(qeez_token=None):
-    '''PUT view to hahdle multiple packets at a time
+    '''PUT view to handle multiple packets at a time
     '''
-    return _process_data(request, qeez_token, multi_data=True)
+    return _process_data(request, qeez_token, multi_data=True, stat=False)
 
 
 @APP.route('/stats/put/<qeez_token>', methods=['PUT'])
 def stats_put(qeez_token=None):
-    '''PUT view to hahdle one packet at a time
+    '''PUT view to handle one packet at a time
     '''
-    return _process_data(request, qeez_token, multi_data=False)
+    return _process_data(request, qeez_token, multi_data=False, stat=False)
+
+
+@APP.route('/stats/ar_mput/<stat>/<qeez_token>', methods=['PUT'])
+def stats_ar_mput(stat=None, qeez_token=None):
+    '''PUT view to handle multiple packets at a time with auto-recalculation
+    '''
+    return _process_data(request, qeez_token, multi_data=True, stat=stat)
+
+
+@APP.route('/stats/ar_put/<stat>/<qeez_token>', methods=['PUT'])
+def stats_ar_put(stat=None, qeez_token=None):
+    '''PUT view to handle one packet at a time with auto-recalculation
+    '''
+    return _process_data(request, qeez_token, multi_data=False, stat=stat)
+
+
+@APP.route('/stats/proc_enq/<stat>/<qeez_token>', methods=['PUT'])
+def stats_proc_enq(stat=None, qeez_token=None):
+    '''PUT view to enqueue selected stat processing
+    '''
+    if stat not in STATS_MAP:
+        return not_found(None)
+    checksum = calc_checksum(request.data)
+    job = enqueue_stat_calc(stat, qeez_token, redis_conn=get_queue_redis())
+    return _json_response({
+        'error': False,
+        'checksum': checksum,
+        'job_id': job.id,
+    })
+
+
+@APP.route('/stats/result/<stat>/<qeez_token>', methods=['GET'])
+def stats_result_get(qeez_token=None, stat=None):
+    '''GET view to get selected stat result
+    '''
+    if stat not in STATS_MAP:
+        return not_found(None)
+    result = pull_stat_res(stat, qeez_token, redis_conn=get_queue_redis())
+    return _json_response({
+        'error': False,
+        'result': result,
+    })
+
+
+@APP.route('/stats/results/<stat>', methods=['GET'])
+def stats_results_get(stat=None):
+    '''GET view to get selected stat result
+    '''
+    if stat not in STATS_MAP:
+        return not_found(None)
+    result = pull_all_stat_res(stat, redis_conn=get_queue_redis())
+    return _json_response({
+        'error': False,
+        'result': result,
+    })
 
 
 if __name__ == '__main__':
-    APP.run(host='127.0.0.1', port=8081)
+    APP.run(host=APP.config['HOST'], port=APP.config['PORT'])
