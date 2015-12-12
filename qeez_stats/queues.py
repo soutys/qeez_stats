@@ -20,6 +20,8 @@ from __future__ import (
     with_statement,
 )
 
+from time import gmtime
+
 from rq import Queue
 
 from qeez_stats.config import CFG
@@ -31,16 +33,18 @@ COLL_ID_FMT = 'stat:%s'
 STAT_ID_FMT = 'stat:%s:%s'
 
 
-def enqueue_stat_save(qeez_token, res_dc, redis_conn=None):
+def enqueue_stat_save(qeez_token, res_dc, atime=None, redis_conn=None):
     '''Enqueues stat for save
     '''
+    if atime is None:
+        atime = gmtime()
     if redis_conn is None:
-        redis_conn = get_redis(CFG['QUEUE_REDIS'])
+        redis_conn = get_redis(CFG['SAVE_REDIS'])
     queue = Queue('save', connection=redis_conn)
     from qeez.api.models import stat_data_save
     return queue.enqueue(
-        stat_data_save, args=(qeez_token, res_dc), timeout=30, result_ttl=-1,
-        ttl=-1)
+        stat_data_save, args=(qeez_token, atime, res_dc), timeout=30,
+        result_ttl=-1, ttl=-1)
 
 
 def enqueue_stat_calc(stat, qeez_token, redis_conn=None):

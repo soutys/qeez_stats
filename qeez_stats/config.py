@@ -29,4 +29,8 @@ CFG = dict(
         'SOCKET': '/tmp/redis.sock',
         'DB': 1,
     },
+    SAVE_REDIS={
+        'SOCKET': '/tmp/redis.sock',
+        'DB': 2,
+    },
 )

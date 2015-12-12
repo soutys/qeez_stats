@@ -16,6 +16,7 @@ from __future__ import (
 )
 
 import logging
+from time import gmtime
 
 from flask import Flask, _app_ctx_stack, request
 from flask.json import jsonify
@@ -77,11 +78,21 @@ def get_queue_redis():
     return top.queue_redis
 
 
+def get_save_redis():
+    '''Instantiates and returns save redis client
+    '''
+    top = _app_ctx_stack.top
+    if not hasattr(top, 'save_redis'):
+        top.save_redis = get_redis(APP.config['SAVE_REDIS'])
+    return top.save_redis
+
+
 def _save_packets(qeez_token, res_dc):
     '''Saves data packets (to all possible DBs)
     '''
     save_packets_to_stat(qeez_token, res_dc, redis_conn=get_stat_redis())
-    enqueue_stat_save(qeez_token, res_dc, redis_conn=get_queue_redis())
+    enqueue_stat_save(
+        qeez_token, res_dc, atime=gmtime(), redis_conn=get_save_redis())
 
 
 def _save_data(qeez_token, packets):
