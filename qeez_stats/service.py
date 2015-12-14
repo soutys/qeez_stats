@@ -167,14 +167,14 @@ def _process_data(req, qeez_token, multi_data=None, stat=None):
 def stats_mput(qeez_token=None):
     '''PUT view to handle multiple packets at a time
     '''
-    return _process_data(request, qeez_token, multi_data=True, stat=False)
+    return _process_data(request, qeez_token, multi_data=True, stat=None)
 
 
 @APP.route('/stats/put/<qeez_token>', methods=['PUT'])
 def stats_put(qeez_token=None):
     '''PUT view to handle one packet at a time
     '''
-    return _process_data(request, qeez_token, multi_data=False, stat=False)
+    return _process_data(request, qeez_token, multi_data=False, stat=None)
 
 
 @APP.route('/stats/ar_mput/<stat>/<qeez_token>', methods=['PUT'])
