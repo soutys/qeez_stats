@@ -11,10 +11,11 @@ from __future__ import (
     with_statement,
 )
 
-#import logging
+import os
 
 
-#LOG = logging.getLogger(__name__)
+REDIS_SOCKET = os.environ.get('REDIS_SOCKET', '/var/run/redis/redis.sock')
+
 
 CFG = dict(
     DEBUG=False,
@@ -22,15 +23,15 @@ CFG = dict(
     PORT=9100,
     JSONIFY_PRETTYPRINT_REGULAR=False,
     STAT_REDIS={
-        'SOCKET': '/tmp/redis.sock',
+        'SOCKET': REDIS_SOCKET,
         'DB': 0,
     },
     QUEUE_REDIS={
-        'SOCKET': '/tmp/redis.sock',
+        'SOCKET': REDIS_SOCKET,
         'DB': 1,
     },
     SAVE_REDIS={
-        'SOCKET': '/tmp/redis.sock',
+        'SOCKET': REDIS_SOCKET,
         'DB': 2,
     },
 )
