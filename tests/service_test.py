@@ -12,7 +12,6 @@ from __future__ import (
 )
 
 import sys
-from binascii import crc32
 from functools import partial
 
 import fakeredis
@@ -21,12 +20,14 @@ import pytest
 from redis import StrictRedis
 
 from qeez_stats import service
-from qeez_stats.utils import to_bytes
+from qeez_stats.utils import calc_checksum
 
 from . import fake_qeez
 from .config import CFG
 
 
+sys.modules['qeez'] = fake_qeez
+sys.modules['qeez.api'] = fake_qeez
 sys.modules['qeez.api.models'] = fake_qeez
 
 
@@ -39,7 +40,9 @@ class FakeStrictRedis(fakeredis.FakeStrictRedis, StrictRedis):
 def _get_redis(_):
     '''Returns fake StrictRedis client instance
     '''
-    return FakeStrictRedis()
+    fsr = FakeStrictRedis()
+    fsr.connection_pool = None
+    return fsr
 
 
 @pytest.fixture
@@ -79,7 +82,7 @@ def test_internal_server_error(client):
 
 def test_stats_put(client):
     _data = b'["1:2:3:4:5", "6:7:8"]'
-    checksum = '%08x' % crc32(_data)
+    checksum = calc_checksum(_data)
     resp = client.put(
         '/stats/put/test_123', data=_data, content_type='application/json')
     assert flask.json.loads(resp.data) == {'checksum': checksum, 'error': False}
@@ -87,7 +90,7 @@ def test_stats_put(client):
 
 def test_stats_mput(client):
     _data = b'[["1:2:3:4:5", "6:7:8"],["7:8:9:10:11", "12:13:14"]]'
-    checksum = '%08x' % crc32(_data)
+    checksum = calc_checksum(_data)
     resp = client.put(
         '/stats/mput/test_123', data=_data, content_type='application/json')
     assert flask.json.loads(resp.data) == {'checksum': checksum, 'error': False}
