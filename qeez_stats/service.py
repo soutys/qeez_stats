@@ -48,7 +48,7 @@ LOG_HNDLR.setFormatter(
         datefmt='%Y-%m-%d %H:%M:%S'))
 APP.logger.addHandler(LOG_HNDLR)
 
-#LOG = logging.getLogger(__name__)
+# LOG = logging.getLogger(__name__)
 
 
 def _json_response(data_dc, status=200):
@@ -157,7 +157,8 @@ def _process_data(req, qeez_token, multi_data=None, stat=None):
             'error': False,
             'checksum': checksum}
         if stat is not None:
-            job = enqueue_stat_calc(stat, qeez_token, redis_conn=get_queue_redis())
+            job = enqueue_stat_calc(
+                stat, qeez_token, redis_conn=get_queue_redis())
             resp['job_id'] = job.id
         return _json_response(resp)
     return bad_request(None)
