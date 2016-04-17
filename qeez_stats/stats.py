@@ -51,7 +51,7 @@ def tops_of_locs(qeez_token):
     '''Calculates TOP-10 of locs with % of positive points
     '''
     raw_packets = retrieve_packets(qeez_token)
-    print('raw_packets(tol):', repr(raw_packets))
+#    print('raw_packets(tol):', repr(raw_packets))
     packets = decode_raw_packets(raw_packets)
 
     per_loc = {}
