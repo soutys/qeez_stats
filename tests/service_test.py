@@ -81,7 +81,7 @@ def test_internal_server_error(client):
 
 
 def test_stats_put(client):
-    _data = b'["1:2:3:4:5", "6:7:8"]'
+    _data = b'["1:2:3:4:5:6:7", "8:9:10"]'
     checksum = calc_checksum(_data)
     resp = client.put(
         '/stats/put/test_123', data=_data, content_type='application/json')
@@ -89,7 +89,8 @@ def test_stats_put(client):
 
 
 def test_stats_mput(client):
-    _data = b'[["1:2:3:4:5", "6:7:8"],["7:8:9:10:11", "12:13:14"]]'
+    _data = b'[["1:2:3:4:5:6:7", "8:9:10"],' \
+        b'["11:12:13:14:15:16:17", "18:19:20"]]'
     checksum = calc_checksum(_data)
     resp = client.put(
         '/stats/mput/test_123', data=_data, content_type='application/json')

@@ -61,6 +61,7 @@ def tops_of_locs(qeez_token):
             loc_stat = per_loc[loc_id]
         else:
             loc_stat = per_loc[loc_id] = [0, 0]
+        # points
         if packet[1][2] > 0:
             loc_stat[0] += 1
         else:
