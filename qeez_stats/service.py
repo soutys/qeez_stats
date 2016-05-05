@@ -28,10 +28,11 @@ from qeez_stats.queues import (
     pull_all_stat_res,
     pull_stat_res,
 )
-from qeez_stats.stats import STATS_MAP
 from qeez_stats.utils import (
     calc_checksum,
-    get_redis,
+    get_queue_redis,
+    get_save_redis,
+    get_stat_redis,
     packet_split,
     save_packets_to_stat,
 )
@@ -58,33 +59,6 @@ def _json_response(data_dc, status=200):
     resp.headers['Server'] = 'Flask'
     resp.status_code = status
     return resp
-
-
-def get_stat_redis():
-    '''Instantiates and returns stat redis client
-    '''
-    top = _app_ctx_stack.top
-    if not hasattr(top, 'stat_redis'):
-        top.stat_redis = get_redis(APP.config['STAT_REDIS'])
-    return top.stat_redis
-
-
-def get_queue_redis():
-    '''Instantiates and returns queue redis client
-    '''
-    top = _app_ctx_stack.top
-    if not hasattr(top, 'queue_redis'):
-        top.queue_redis = get_redis(APP.config['QUEUE_REDIS'])
-    return top.queue_redis
-
-
-def get_save_redis():
-    '''Instantiates and returns save redis client
-    '''
-    top = _app_ctx_stack.top
-    if not hasattr(top, 'save_redis'):
-        top.save_redis = get_redis(APP.config['SAVE_REDIS'])
-    return top.save_redis
 
 
 def _save_packets(qeez_token, res_dc):
@@ -149,8 +123,6 @@ def _process_data(req, qeez_token, multi_data=None, stat=None):
         json_data = _json
     else:
         json_data = [_json]
-    if stat is not None and stat not in STATS_MAP:
-        return not_found(None)
     checksum = calc_checksum(req.data)
     if _save_data(qeez_token, json_data):
         resp = {
@@ -196,8 +168,6 @@ def stats_ar_put(stat=None, qeez_token=None):
 def stats_proc_enq(stat=None, qeez_token=None):
     '''PUT view to enqueue selected stat processing
     '''
-    if stat not in STATS_MAP:
-        return not_found(None)
     checksum = calc_checksum(request.data)
     job = enqueue_stat_calc(stat, qeez_token, redis_conn=get_queue_redis())
     return _json_response({
@@ -211,8 +181,6 @@ def stats_proc_enq(stat=None, qeez_token=None):
 def stats_result_get(qeez_token=None, stat=None):
     '''GET view to get selected stat result
     '''
-    if stat not in STATS_MAP:
-        return not_found(None)
     result = pull_stat_res(stat, qeez_token, redis_conn=get_queue_redis())
     return _json_response({
         'error': False,
@@ -224,8 +192,6 @@ def stats_result_get(qeez_token=None, stat=None):
 def stats_results_get(stat=None):
     '''GET view to get selected stat result
     '''
-    if stat not in STATS_MAP:
-        return not_found(None)
     result = pull_all_stat_res(stat, redis_conn=get_queue_redis())
     return _json_response({
         'error': False,

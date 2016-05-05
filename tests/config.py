@@ -29,4 +29,8 @@ CFG = dict(
         'SOCKET': '/dev/null',
         'DB': 1,
     },
+    SAVE_REDIS={
+        'SOCKET': '/dev/null',
+        'DB': 2,
+    },
 )

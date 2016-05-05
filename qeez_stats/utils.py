@@ -25,25 +25,26 @@ LOG = logging.getLogger(__name__)
 COLL_ID_FMT = '_coll:%s'
 PACKETS_ID_FMT = '_packets:%s'
 PACKET_SEP = ':'
+REDIS_CONNS = {}
 
 
 if sys.version_info > (3,):
-    def to_bytes(str_buf):
+    def to_bytes(str_buf):  # pragma: PY2to3
         '''Converts UTF-8 string to bytes in Py3
         '''
         return bytes(str_buf, encoding='utf-8')
 
-    def to_str(byte_buf):
+    def to_str(byte_buf):  # pragma: PY2to3
         '''Converts bytes to UTF-8 string in Py3
         '''
         return str(byte_buf, encoding='utf-8')
 else:
-    def to_bytes(str_buf):
+    def to_bytes(str_buf):  # pragma: PY2to3
         '''Converts UTF-8 string to bytes in Py2
         '''
         return bytes(str_buf)
 
-    def to_str(byte_buf):
+    def to_str(byte_buf):  # pragma: PY2to3
         '''Converts bytes to UTF-8 string in Py2
         '''
         return str(byte_buf)
@@ -61,6 +62,30 @@ def get_redis(redis_cfg):
     '''Returns redis client instance for a given config
     '''
     return StrictRedis(unix_socket_path=redis_cfg['SOCKET'], db=redis_cfg['DB'])
+
+
+def get_queue_redis():
+    '''Instantiates and returns queue redis client
+    '''
+    if 'queue_redis' not in REDIS_CONNS:
+        REDIS_CONNS['queue_redis'] = get_redis(CFG['QUEUE_REDIS'])
+    return REDIS_CONNS['queue_redis']
+
+
+def get_save_redis():
+    '''Instantiates and returns save redis client
+    '''
+    if 'save_redis' not in REDIS_CONNS:
+        REDIS_CONNS['save_redis'] = get_redis(CFG['SAVE_REDIS'])
+    return REDIS_CONNS['save_redis']
+
+
+def get_stat_redis():
+    '''Instantiates and returns stat redis client
+    '''
+    if 'stat_redis' not in REDIS_CONNS:
+        REDIS_CONNS['stat_redis'] = get_redis(CFG['STAT_REDIS'])
+    return REDIS_CONNS['stat_redis']
 
 
 def packet_split(key, val):
@@ -121,7 +146,7 @@ def save_packets_to_stat(qeez_token, res_dc, redis_conn=None):
     '''
     if redis_conn is None:
         redis_conn = get_redis(CFG['STAT_REDIS'])
-    redis_conn.hmset(PACKETS_ID_FMT % qeez_token, res_dc)
+    return redis_conn.hmset(PACKETS_ID_FMT % qeez_token, res_dc)
 
 
 def retrieve_packets(qeez_token, redis_conn=None):

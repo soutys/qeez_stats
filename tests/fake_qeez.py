@@ -16,3 +16,9 @@ def stat_data_save(*args, **kwargs):
     '''
     '''
     pass
+
+
+def stat_fn(*args, **kwargs):
+    '''Stub stat function
+    '''
+    return 123.1
