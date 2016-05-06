@@ -59,7 +59,7 @@ def test_enqueue_stat_save():
 
 
 def test_enqueue_stat_calc_fail():
-    stat_id = 'qeez.api.models.stat_fn'
+    stat_id = CFG['STAT_SAVE_FN']
     qeez_token = get_token()
 
     job = queues.enqueue_stat_calc(stat_id, qeez_token, redis_conn=None)
@@ -71,7 +71,7 @@ def test_enqueue_stat_calc_fail():
 
 
 def test_enqueue_stat_calc_ok():
-    stat_id = 'qeez.api.models.stat_fn'
+    stat_id = CFG['STAT_SAVE_FN']
     qeez_token = get_token()
 
     job = queues.enqueue_stat_calc(
@@ -92,7 +92,7 @@ def test_pull_stat_res_fail():
 
 def test_pull_stat_res_ok():
     from qeez_stats.utils import save_packets_to_stat
-    stat_id = 'qeez.api.models.stat_fn'
+    stat_id = CFG['STAT_SAVE_FN']
     qeez_token = get_token()
     res_dc = {
         b'7:6:5:4:3:2:1': b'2,3,1:6.5:4',
@@ -118,12 +118,12 @@ def test_pull_all_stat_res_fail():
 
 
 def test_pull_all_stat_res_no_job():
-    stat_id = 'qeez.api.models.stat_fn2'
+    stat_id = CFG['STAT_SAVE_FN'] + '2'
     assert queues.pull_all_stat_res(stat_id, redis_conn=None) is None
 
 
 def test_pull_all_stat_no_res():
-    stat_id = 'qeez.api.models.stat_fn2'
+    stat_id = CFG['STAT_SAVE_FN'] + '2'
 
     job = queues.enqueue_stat_calc(stat_id, get_token(), redis_conn=None)
     assert isinstance(job, Job)
@@ -133,7 +133,7 @@ def test_pull_all_stat_no_res():
 
 
 def test_pull_all_stat_res_ok():
-    stat_id = 'qeez.api.models.stat_fn'
+    stat_id = CFG['STAT_SAVE_FN']
     qeez_token = get_token()
 
     redis_conn = get_redis(CFG['QUEUE_REDIS'])

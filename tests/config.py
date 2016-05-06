@@ -33,4 +33,5 @@ CFG = dict(
         'SOCKET': '/dev/null',
         'DB': 2,
     },
+    STAT_SAVE_FN='qeez.api.models.stat_fn',
 )

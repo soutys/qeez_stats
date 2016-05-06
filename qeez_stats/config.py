@@ -34,4 +34,5 @@ CFG = dict(
         'SOCKET': REDIS_SOCKET,
         'DB': 2,
     },
+    STAT_SAVE_FN='qeez.api.models.stat_data_save',
 )

@@ -42,7 +42,7 @@ def enqueue_stat_save(qeez_token, res_dc, atime=None, redis_conn=None):
         redis_conn = get_redis(CFG['SAVE_REDIS'])
     queue = Queue('save', connection=redis_conn)
     return queue.enqueue(
-        'qeez.api.models.stat_data_save', args=(qeez_token, atime, res_dc),
+        CFG['STAT_SAVE_FN'], args=(qeez_token, atime, res_dc),
         timeout=30, result_ttl=-1, ttl=-1)
 
 

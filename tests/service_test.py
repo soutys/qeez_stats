@@ -110,7 +110,7 @@ def test_stats_ar_mput(client):
     _data = b'[["1:2:3:4:5:6:7", "8:9:10"],' \
         b'["11:12:13:14:15:16:17", "18:19:20"]]'
     checksum = calc_checksum(_data)
-    stat_id = 'qeez.api.models.stat_fn'
+    stat_id = CFG['STAT_SAVE_FN']
     qeez_token = 'test_123'
     resp = client.put(
         '/stats/ar_mput/' + stat_id + '/' + qeez_token, data=_data,
@@ -122,7 +122,7 @@ def test_stats_ar_mput(client):
 def test_stats_ar_put(client):
     _data = b'["1:2:3:4:5:6:7", "8:9:10"]'
     checksum = calc_checksum(_data)
-    stat_id = 'qeez.api.models.stat_fn'
+    stat_id = CFG['STAT_SAVE_FN']
     qeez_token = 'test_123'
     resp = client.put(
         '/stats/ar_put/' + stat_id + '/' + qeez_token, data=_data,
@@ -132,7 +132,7 @@ def test_stats_ar_put(client):
 
 
 def test_stats_proc_enq(client):
-    stat_id = 'qeez.api.models.stat_fn'
+    stat_id = CFG['STAT_SAVE_FN']
     qeez_token = 'test_123'
     resp = client.put(
         '/stats/proc_enq/' + stat_id + '/' + qeez_token,
@@ -142,7 +142,7 @@ def test_stats_proc_enq(client):
 
 
 def test_stats_result_get_no_res(client):
-    stat_id = 'qeez.api.models.stat_fn'
+    stat_id = CFG['STAT_SAVE_FN']
     qeez_token = 'test_123'
     resp = client.get(
         '/stats/result/' + stat_id + '/' + qeez_token,
@@ -151,7 +151,7 @@ def test_stats_result_get_no_res(client):
 
 
 def test_stats_results_get_res_ok(client):
-    stat_id = 'qeez.api.models.stat_fn'
+    stat_id = CFG['STAT_SAVE_FN']
     resp = client.get(
         '/stats/results/' + stat_id,
         content_type='application/json')
