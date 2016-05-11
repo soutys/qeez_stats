@@ -10,6 +10,8 @@ $ rqinfo --url unix:///tmp/redis.sock?db=1
 
 * queue worker:
 $ rqworker --url unix:///tmp/redis.sock?db=1 --name my-worker-nr-x --verbose
+# or
+# python manage.py rqworker --name=my-worker-nr-x queue-of-db-1
 '''
 
 from __future__ import (
@@ -43,7 +45,7 @@ def enqueue_stat_save(qeez_token, res_dc, atime=None, redis_conn=None):
     queue = Queue('save', connection=redis_conn)
     return queue.enqueue(
         CFG['STAT_SAVE_FN'], args=(qeez_token, atime, res_dc),
-        timeout=30, result_ttl=-1, ttl=-1)
+        timeout=30, result_ttl=30, ttl=-1)
 
 
 def enqueue_stat_calc(stat, qeez_token, redis_conn=None):

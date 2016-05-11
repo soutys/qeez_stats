@@ -94,18 +94,21 @@ def packet_split(key, val):
         'ans_val:ans_tim:pts')
     '''
 
-    LOG.error(
+    LOG.debug(
         'key / val: %s (%s) / %s (%s)', repr(key), repr(type(key)), repr(val),
         repr(type(val)))
 
     key_parts = key.split(PACKET_SEP)
     if len(key_parts) != 7:
+        LOG.warning('Bad key: %s', repr(key))
         return None
     if not all([part.isdigit() for part in key_parts]):
+        LOG.warning('Bad key parts: %s', repr(key_parts))
         return None
 
     val_parts = val.split(PACKET_SEP)
     if len(val_parts) != 3:
+        LOG.warning('Bad val: %s', repr(val))
         return None
 
     return (key_parts, val_parts)

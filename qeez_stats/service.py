@@ -4,7 +4,7 @@
 '''Qeez statistics service module
 
 $ pip install -U .
-$ python -m qeez_stats.service
+$ REDIS_SOCKET=/tmp/redis.sock python -m qeez_stats.service
 '''
 
 from __future__ import (
