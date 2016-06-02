@@ -55,23 +55,23 @@ def client(request):
 
 def test_not_found(client):
     resp = client.get('/')
-    assert resp.data == b'{"error": true, "status": 404}'
+    assert flask.json.loads(resp.data) == {'error': True, 'status': 404}
 
 
 def test_method_not_allowed(client):
     resp = client.get('/stats/mput/123')
-    assert resp.data == b'{"error": true, "status": 405}'
+    assert flask.json.loads(resp.data) == {'error': True, 'status': 405}
 
 
 def test_bad_request(client):
     resp = client.put('/stats/mput/123')
-    assert resp.data == b'{"error": true, "status": 400}'
+    assert flask.json.loads(resp.data) == {'error': True, 'status': 400}
 
 
 def test_internal_server_error(client):
     with service.APP.app_context():
         resp = service.internal_server_error(None)
-        assert resp.data == b'{"error": true, "status": 500}'
+        assert flask.json.loads(resp.data) == {'error': True, 'status': 500}
 
 
 def test_stats_mput_fail(client):
