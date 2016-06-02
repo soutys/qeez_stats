@@ -131,7 +131,7 @@ def decode_raw_packet(raw_packet):
     return (
         tuple(int(part) for part in key_parts),
         (
-            val_parts[0],
+            [int(ans) for ans in val_parts[0].split(',')],
             float(val_parts[1]),
             int(val_parts[2]),
         ),

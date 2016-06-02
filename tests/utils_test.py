@@ -79,7 +79,7 @@ def test_decode_raw_packet():
     assert utils.decode_raw_packet(['', '']) is None
     assert utils.decode_raw_packet([b'', b'']) is None
     assert utils.decode_raw_packet([b'1:2:3:4:5:6:7', b'1:2:3']) == \
-        ((1, 2, 3, 4, 5, 6, 7), ('1', 2.0, 3))
+        ((1, 2, 3, 4, 5, 6, 7), ([1], 2.0, 3))
 
 
 def test_decode_raw_packets():
@@ -87,11 +87,11 @@ def test_decode_raw_packets():
     assert utils.decode_raw_packets({b'': b'', b'a': b'b'}) == [None, None]
     assert utils.decode_raw_packets(
         {b'': b'', b'1:2:3:4:5:6:7': b'1:2:3'}) == [None,
-            ((1, 2, 3, 4, 5, 6, 7), ('1', 2.0, 3))]
+            ((1, 2, 3, 4, 5, 6, 7), ([1], 2.0, 3))]
 
     raw_packets = {b'7:6:5:4:3:2:1': b'2,3,1:6.5:4', b'1:2:3:4:5:6:7': b'1:2:3'}
-    dec_packets = [((7, 6, 5, 4, 3, 2, 1), ('2,3,1', 6.5, 4)),
-        ((1, 2, 3, 4, 5, 6, 7), ('1', 2.0, 3))]
+    dec_packets = [((7, 6, 5, 4, 3, 2, 1), ([2, 3, 1], 6.5, 4)),
+        ((1, 2, 3, 4, 5, 6, 7), ([1], 2.0, 3))]
     for dec_packet in dec_packets:
         assert dec_packet in utils.decode_raw_packets(raw_packets)
 

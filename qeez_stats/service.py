@@ -55,7 +55,7 @@ APP.logger.addHandler(LOG_HNDLR)
 def _json_response(data_dc, status=200):
     '''Creates HTTP response object with appropriate headers for JSON data
     '''
-    resp = jsonify(data_dc.items())
+    resp = jsonify(**data_dc)
     resp.headers['Server'] = 'Flask'
     resp.status_code = status
     return resp
