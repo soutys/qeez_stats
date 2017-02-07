@@ -18,11 +18,12 @@ from __future__ import (
 import logging
 from time import gmtime
 
-from flask import Flask, _app_ctx_stack, request
+from flask import Flask, request
 from flask.json import jsonify
 
 from qeez_stats.config import CFG
 from qeez_stats.queues import (
+    direct_stat_save,
     enqueue_stat_save,
     enqueue_stat_calc,
     pull_all_stat_res,
@@ -30,6 +31,7 @@ from qeez_stats.queues import (
 )
 from qeez_stats.utils import (
     calc_checksum,
+    get_method_by_path,
     get_queue_redis,
     get_save_redis,
     get_stat_redis,
@@ -52,6 +54,16 @@ APP.logger.addHandler(LOG_HNDLR)
 # LOG = logging.getLogger(__name__)
 
 
+def prepare_env():
+    '''Prepares environment
+    '''
+    method_path = CFG.get('ENV_PREPARE_FN')
+    if method_path:
+        prep_fun = get_method_by_path(method_path)
+        if prep_fun:
+            prep_fun(app_cfg=CFG)
+
+
 def _json_response(data_dc, status=200):
     '''Creates HTTP response object with appropriate headers for JSON data
     '''
@@ -61,15 +73,18 @@ def _json_response(data_dc, status=200):
     return resp
 
 
-def _save_packets(qeez_token, res_dc):
+def _save_packets(qeez_token, res_dc, async=True):
     '''Saves data packets (to all possible DBs)
     '''
     save_packets_to_stat(qeez_token, res_dc, redis_conn=get_stat_redis())
-    enqueue_stat_save(
-        qeez_token, res_dc, atime=gmtime(), redis_conn=get_save_redis())
+    if async:
+        enqueue_stat_save(
+            qeez_token, res_dc, atime=gmtime(), redis_conn=get_save_redis())
+    else:
+        direct_stat_save(qeez_token, res_dc, atime=gmtime())
 
 
-def _save_data(qeez_token, packets):
+def _save_data(qeez_token, packets, async=True):
     '''Parses and saves data packets
     '''
     res_dc = {}
@@ -80,7 +95,7 @@ def _save_data(qeez_token, packets):
                 res_dc[key] = val
 
     if res_dc:
-        _save_packets(qeez_token, res_dc)
+        _save_packets(qeez_token, res_dc, async=async)
         return True
     return False
 
@@ -124,7 +139,7 @@ def _process_data(req, qeez_token, multi_data=None, stat=None):
     else:
         json_data = [_json]
     checksum = calc_checksum(req.data)
-    if _save_data(qeez_token, json_data):
+    if _save_data(qeez_token, json_data, async=('sync' not in req.args)):
         resp = {
             'error': False,
             'checksum': checksum}
@@ -200,4 +215,5 @@ def stats_results_get(stat=None):
 
 
 if __name__ == '__main__':
+    prepare_env()
     APP.run(host=APP.config['HOST'], port=APP.config['PORT'])

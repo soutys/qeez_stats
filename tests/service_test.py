@@ -53,6 +53,12 @@ def client(request):
     return flask_cli
 
 
+def test_prepare_env():
+    from qeez_stats.config import CFG as _CFG
+    _CFG['ENV_PREPARE_FN'] = CFG['ENV_PREPARE_FN']
+    service.prepare_env()
+
+
 def test_not_found(client):
     resp = client.get('/')
     assert flask.json.loads(resp.data) == {'error': True, 'status': 404}
@@ -106,11 +112,19 @@ def test_stats_put_ok(client):
     assert flask.json.loads(resp.data) == {'checksum': checksum, 'error': False}
 
 
+def test_stats_put_ok_direct(client):
+    _data = b'["1:2:3:4:5:6:7", "8:9:10"]'
+    checksum = calc_checksum(_data)
+    resp = client.put(
+        '/stats/put/test_123?sync', data=_data, content_type='application/json')
+    assert flask.json.loads(resp.data) == {'checksum': checksum, 'error': False}
+
+
 def test_stats_ar_mput(client):
     _data = b'[["1:2:3:4:5:6:7", "8:9:10"],' \
         b'["11:12:13:14:15:16:17", "18:19:20"]]'
     checksum = calc_checksum(_data)
-    stat_id = CFG['STAT_SAVE_FN']
+    stat_id = CFG['STAT_CALC_FN']
     qeez_token = 'test_123'
     resp = client.put(
         '/stats/ar_mput/' + stat_id + '/' + qeez_token, data=_data,
@@ -122,7 +136,7 @@ def test_stats_ar_mput(client):
 def test_stats_ar_put(client):
     _data = b'["1:2:3:4:5:6:7", "8:9:10"]'
     checksum = calc_checksum(_data)
-    stat_id = CFG['STAT_SAVE_FN']
+    stat_id = CFG['STAT_CALC_FN']
     qeez_token = 'test_123'
     resp = client.put(
         '/stats/ar_put/' + stat_id + '/' + qeez_token, data=_data,
@@ -132,7 +146,7 @@ def test_stats_ar_put(client):
 
 
 def test_stats_proc_enq(client):
-    stat_id = CFG['STAT_SAVE_FN']
+    stat_id = CFG['STAT_CALC_FN']
     qeez_token = 'test_123'
     resp = client.put(
         '/stats/proc_enq/' + stat_id + '/' + qeez_token,
@@ -142,7 +156,7 @@ def test_stats_proc_enq(client):
 
 
 def test_stats_result_get_no_res(client):
-    stat_id = CFG['STAT_SAVE_FN']
+    stat_id = CFG['STAT_CALC_FN']
     qeez_token = 'test_123'
     resp = client.get(
         '/stats/result/' + stat_id + '/' + qeez_token,
@@ -151,7 +165,7 @@ def test_stats_result_get_no_res(client):
 
 
 def test_stats_results_get_res_ok(client):
-    stat_id = CFG['STAT_SAVE_FN']
+    stat_id = CFG['STAT_CALC_FN']
     resp = client.get(
         '/stats/results/' + stat_id,
         content_type='application/json')

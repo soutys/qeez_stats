@@ -11,6 +11,8 @@ from __future__ import (
     with_statement,
 )
 
+import importlib
+import inspect
 import logging
 import sys
 from zlib import crc32
@@ -174,3 +176,22 @@ def retrieve_set(stat, redis_conn=None):
     if redis_conn is None:
         redis_conn = get_redis(CFG['STAT_REDIS'])
     return redis_conn.smembers(COLL_ID_FMT % stat)
+
+
+def get_method_by_path(method_path):
+    '''Returns save method object by path
+    '''
+    method_mod, method_name = method_path.rsplit('.', 1)
+    try:
+        importlib.import_module(method_mod)
+    except ImportError as exc:
+        LOG.error(repr(exc))
+        return None
+    try:
+        mod = sys.modules[method_mod]
+        method = eval(method_name, mod.__dict__)
+        if inspect.isfunction(method):
+            return method
+    except (KeyError, NameError) as exc:
+        LOG.error(repr(exc))
+    return None

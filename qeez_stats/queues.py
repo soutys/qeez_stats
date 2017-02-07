@@ -22,17 +22,36 @@ from __future__ import (
     with_statement,
 )
 
+import logging
 from time import gmtime
 
 from rq import Queue
 
 from qeez_stats.config import CFG
 from qeez_stats.stats import stat_collector
-from qeez_stats.utils import get_redis, to_str
+from qeez_stats.utils import get_method_by_path, get_redis, to_str
 
+
+LOG = logging.getLogger(__name__)
 
 COLL_ID_FMT = 'stat:%s'
 STAT_ID_FMT = 'stat:%s:%s'
+
+
+def direct_stat_save(qeez_token, res_dc, atime=None, **kwargs):
+    '''Saves stat using write method
+    '''
+    if atime is None:
+        atime = gmtime()
+    try:
+        function = get_method_by_path(CFG['STAT_SAVE_FN'])
+        if function:
+            return function(qeez_token, atime, res_dc, **kwargs)
+    except Exception as exc:
+        print(repr(exc))
+        LOG.error('%s @ %s', repr(exc), repr(res_dc))
+
+    return False
 
 
 def enqueue_stat_save(qeez_token, res_dc, atime=None, redis_conn=None):

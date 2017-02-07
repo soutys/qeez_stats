@@ -33,5 +33,7 @@ CFG = dict(
         'SOCKET': '/dev/null',
         'DB': 2,
     },
-    STAT_SAVE_FN='qeez.api.models.stat_fn',
+    ENV_PREPARE_FN='qeez.api.models.prepare_env',
+    STAT_SAVE_FN='qeez.api.models.stat_data_save',
+    STAT_CALC_FN='qeez.api.models.stat_fn',
 )

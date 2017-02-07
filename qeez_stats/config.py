@@ -14,7 +14,7 @@ from __future__ import (
 import os
 
 
-REDIS_SOCKET = os.environ.get('REDIS_SOCKET', '/var/run/redis/redis.sock')
+REDIS_SOCKET = os.environ.get('REDIS_SOCKET', '/tmp/redis.sock')
 
 
 CFG = dict(
@@ -34,5 +34,6 @@ CFG = dict(
         'SOCKET': REDIS_SOCKET,
         'DB': 2,
     },
+    ENV_PREPARE_FN='qeez.api.models.prepare_env',
     STAT_SAVE_FN='qeez.api.models.stat_data_save',
 )

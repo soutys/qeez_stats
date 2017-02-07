@@ -12,10 +12,18 @@ from __future__ import (
 )
 
 
-def stat_data_save(*args, **kwargs):
-    '''
+def prepare_env(**kwargs):
+    '''Stub prepare environment function
     '''
     pass
+
+
+def stat_data_save(qeez_token, *args, **kwargs):
+    '''Stub data save function
+    '''
+    if kwargs.get('raise_exc'):
+        raise RuntimeError('Boo!')
+    return bool(qeez_token)
 
 
 def stat_fn(*args, **kwargs):
