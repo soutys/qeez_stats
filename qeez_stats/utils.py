@@ -26,6 +26,7 @@ LOG = logging.getLogger(__name__)
 
 COLL_ID_FMT = '_coll:%s'
 PACKETS_ID_FMT = '_packets:%s'
+PACKET_EXPIRE = 1800
 PACKET_SEP = ':'
 REDIS_CONNS = {}
 
@@ -151,7 +152,10 @@ def save_packets_to_stat(qeez_token, res_dc, redis_conn=None):
     '''
     if redis_conn is None:
         redis_conn = get_redis(CFG['STAT_REDIS'])
-    return redis_conn.hmset(PACKETS_ID_FMT % qeez_token, res_dc)
+    key = PACKETS_ID_FMT % qeez_token
+    res = redis_conn.hmset(key, res_dc)
+    redis_conn.expire(key, PACKET_EXPIRE)
+    return res
 
 
 def retrieve_packets(qeez_token, redis_conn=None):
