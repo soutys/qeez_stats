@@ -88,8 +88,8 @@ def test_stats_mput_fail(client):
 
 
 def test_stats_mput_ok(client):
-    _data = b'[["1:2:3:4:5:6:7", "8:9:10"],' \
-        b'["11:12:13:14:15:16:17", "18:19:20"]]'
+    _data = b'[["1:2:3:4:5:6:7:8", "9:10:11"],' \
+        b'["11:12:13:14:15:16:17:18", "19:20:21"]]'
     checksum = calc_checksum(_data)
     resp = client.put(
         '/stats/mput/test_123', data=_data, content_type='application/json')
@@ -97,7 +97,7 @@ def test_stats_mput_ok(client):
 
 
 def test_stats_put_fail(client):
-    _data = b'["1:2:3:4:5:6", "8:9:10"]'
+    _data = b'["1:2:3:4:5:6:7", "8:9:10"]'
     checksum = calc_checksum(_data)
     resp = client.put(
         '/stats/put/test_123', data=_data, content_type='application/json')
@@ -105,7 +105,7 @@ def test_stats_put_fail(client):
 
 
 def test_stats_put_ok(client):
-    _data = b'["1:2:3:4:5:6:7", "8:9:10"]'
+    _data = b'["1:2:3:4:5:6:7:8", "9:10:11"]'
     checksum = calc_checksum(_data)
     resp = client.put(
         '/stats/put/test_123', data=_data, content_type='application/json')
@@ -113,7 +113,7 @@ def test_stats_put_ok(client):
 
 
 def test_stats_put_ok_direct(client):
-    _data = b'["1:2:3:4:5:6:7", "8:9:10"]'
+    _data = b'["1:2:3:4:5:6:7:8", "9:10:11"]'
     checksum = calc_checksum(_data)
     resp = client.put(
         '/stats/put/test_123?sync', data=_data, content_type='application/json')
@@ -121,8 +121,8 @@ def test_stats_put_ok_direct(client):
 
 
 def test_stats_ar_mput(client):
-    _data = b'[["1:2:3:4:5:6:7", "8:9:10"],' \
-        b'["11:12:13:14:15:16:17", "18:19:20"]]'
+    _data = b'[["1:2:3:4:5:6:7:8", "9:10:11"],' \
+        b'["11:12:13:14:15:16:17:18", "19:20:21"]]'
     checksum = calc_checksum(_data)
     stat_id = CFG['STAT_CALC_FN']
     qeez_token = 'test_123'
@@ -134,7 +134,7 @@ def test_stats_ar_mput(client):
 
 
 def test_stats_ar_put(client):
-    _data = b'["1:2:3:4:5:6:7", "8:9:10"]'
+    _data = b'["1:2:3:4:5:6:7:8", "9:10:11"]'
     checksum = calc_checksum(_data)
     stat_id = CFG['STAT_CALC_FN']
     qeez_token = 'test_123'

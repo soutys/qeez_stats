@@ -102,7 +102,7 @@ def packet_split(key, val):
         repr(type(val)))
 
     key_parts = key.split(PACKET_SEP)
-    if len(key_parts) != 7:
+    if len(key_parts) != 8:
         LOG.warning('Bad key: %s', repr(key))
         return None
     if not all([part.isdigit() for part in key_parts]):
