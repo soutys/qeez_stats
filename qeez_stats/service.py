@@ -78,10 +78,11 @@ def _save_packets(qeez_token, res_dc, async=True):
     '''
     save_packets_to_stat(qeez_token, res_dc, redis_conn=get_stat_redis())
     if async:
-        enqueue_stat_save(
+        job = enqueue_stat_save(
             qeez_token, res_dc, atime=gmtime(), redis_conn=get_save_redis())
-    else:
-        direct_stat_save(qeez_token, res_dc, atime=gmtime())
+        return bool(job)
+
+    return direct_stat_save(qeez_token, res_dc, atime=gmtime())
 
 
 def _save_data(qeez_token, packets, async=True):
@@ -95,8 +96,8 @@ def _save_data(qeez_token, packets, async=True):
                 res_dc[key] = val
 
     if res_dc:
-        _save_packets(qeez_token, res_dc, async=async)
-        return True
+        return _save_packets(qeez_token, res_dc, async=async)
+
     return False
 
 

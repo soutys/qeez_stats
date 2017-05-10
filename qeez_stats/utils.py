@@ -93,7 +93,7 @@ def get_stat_redis():
 
 def packet_split(key, val):
     '''Tests if packet parts are OK, returns splitted parts or None
-    packet = ('grp_id:loc_id:cmp_id:rnd_id:cat_id:stp_id:gmr_id',
+    packet = ('grp_id:loc_id:cmp_id:rnd_id:cat_id:stp_id:gmr_id:tm_id',
         'ans_val:ans_tim:pts')
     '''
 
