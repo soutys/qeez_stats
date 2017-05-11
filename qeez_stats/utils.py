@@ -134,7 +134,7 @@ def decode_raw_packet(raw_packet):
     return (
         tuple(int(part) for part in key_parts),
         (
-            [int(ans) for ans in val_parts[0].split(',')],
+            [int(ans) for ans in val_parts[0].split(',') if ans.isdigit()],
             float(val_parts[1]),
             int(val_parts[2]),
         ),
