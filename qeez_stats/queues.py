@@ -48,8 +48,7 @@ def direct_stat_save(qeez_token, res_dc, atime=None, **kwargs):
         if function:
             return function(qeez_token, atime, res_dc, **kwargs)
     except Exception as exc:
-        print(repr(exc))
-        LOG.error('%s @ %s', repr(exc), repr(res_dc))
+        LOG.exception('%s @ %s', repr(exc), repr(res_dc))
 
     return False
 
