@@ -63,6 +63,15 @@ def test_direct_stat_save():
     assert isinstance(ret, bool)
     assert not ret
 
+    _CFG['STAT_SAVE_FN'] = CFG['STAT_SAVE_FN'] = \
+        'qeez.api.models.stat_data_save_failing'
+    from raven import Client
+    _CFG['RAVEN_CLI'] = CFG['RAVEN_CLI'] = Client('')
+
+    ret = queues.direct_stat_save(qeez_token, {}, atime=None)
+    assert isinstance(ret, bool)
+    assert not ret
+
     _CFG['STAT_SAVE_FN'] = CFG['STAT_SAVE_FN'] = orig_stat_save_fn
 
     ret = queues.direct_stat_save(None, {}, atime=None)

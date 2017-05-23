@@ -13,6 +13,8 @@ from __future__ import (
 
 import logging
 
+from raven import Client
+
 
 LOG = logging.getLogger(__name__)
 
@@ -36,4 +38,5 @@ CFG = dict(
     ENV_PREPARE_FN='qeez.api.models.prepare_env',
     STAT_SAVE_FN='qeez.api.models.stat_data_save',
     STAT_CALC_FN='qeez.api.models.stat_fn',
+    RAVEN_CLI=Client(''),
 )

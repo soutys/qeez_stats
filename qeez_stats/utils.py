@@ -64,7 +64,8 @@ def calc_checksum(data):
 def get_redis(redis_cfg):
     '''Returns redis client instance for a given config
     '''
-    return StrictRedis(unix_socket_path=redis_cfg['SOCKET'], db=redis_cfg['DB'])
+    return StrictRedis(
+        unix_socket_path=redis_cfg['SOCKET'], db=redis_cfg['DB'])
 
 
 def get_queue_redis():
@@ -144,7 +145,8 @@ def decode_raw_packet(raw_packet):
 def decode_raw_packets(raw_packets):
     '''Decodes multiple raw packets at once
     '''
-    return [decode_raw_packet(raw_packet) for raw_packet in raw_packets.items()]
+    return [
+        decode_raw_packet(raw_packet) for raw_packet in raw_packets.items()]
 
 
 def save_packets_to_stat(qeez_token, res_dc, redis_conn=None):

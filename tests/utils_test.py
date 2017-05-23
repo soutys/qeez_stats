@@ -86,13 +86,15 @@ def test_decode_raw_packets():
     assert utils.decode_raw_packets({'': '', 'a': 'b'}) == [None, None]
     assert utils.decode_raw_packets({b'': b'', b'a': b'b'}) == [None, None]
     assert utils.decode_raw_packets(
-        {b'': b'', b'1:2:3:4:5:6:7:8': b'1:2:3'}) == [None,
+        {b'': b'', b'1:2:3:4:5:6:7:8': b'1:2:3'}) == [
+            None,
             ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3))]
 
     raw_packets = {
         b'8:7:6:5:4:3:2:1': b'2,3,1:6.5:4',
         b'1:2:3:4:5:6:7:8': b'1:2:3'}
-    dec_packets = [((8, 7, 6, 5, 4, 3, 2, 1), ([2, 3, 1], 6.5, 4)),
+    dec_packets = [
+        ((8, 7, 6, 5, 4, 3, 2, 1), ([2, 3, 1], 6.5, 4)),
         ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3))]
     for dec_packet in dec_packets:
         assert dec_packet in utils.decode_raw_packets(raw_packets)

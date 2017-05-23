@@ -48,6 +48,11 @@ def direct_stat_save(qeez_token, res_dc, atime=None, **kwargs):
         if function:
             return function(qeez_token, atime, res_dc, **kwargs)
     except Exception as exc:
+        if CFG['RAVEN_CLI']:
+            CFG['RAVEN_CLI'].user_context({
+                'res_dc': res_dc,
+            })
+            CFG['RAVEN_CLI'].captureException()
         LOG.exception('%s @ %s', repr(exc), repr(res_dc))
 
     return False

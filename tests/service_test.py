@@ -93,7 +93,9 @@ def test_stats_mput_ok(client):
     checksum = calc_checksum(_data)
     resp = client.put(
         '/stats/mput/test_123', data=_data, content_type='application/json')
-    assert flask.json.loads(resp.data) == {'checksum': checksum, 'error': False}
+    assert flask.json.loads(resp.data) == {
+        'checksum': checksum,
+        'error': False}
 
 
 def test_stats_put_fail(client):
@@ -109,15 +111,20 @@ def test_stats_put_ok(client):
     checksum = calc_checksum(_data)
     resp = client.put(
         '/stats/put/test_123', data=_data, content_type='application/json')
-    assert flask.json.loads(resp.data) == {'checksum': checksum, 'error': False}
+    assert flask.json.loads(resp.data) == {
+        'checksum': checksum,
+        'error': False}
 
 
 def test_stats_put_ok_direct(client):
     _data = b'["1:2:3:4:5:6:7:8", "9:10:11"]'
     checksum = calc_checksum(_data)
     resp = client.put(
-        '/stats/put/test_123?sync', data=_data, content_type='application/json')
-    assert flask.json.loads(resp.data) == {'checksum': checksum, 'error': False}
+        '/stats/put/test_123?sync', data=_data,
+        content_type='application/json')
+    assert flask.json.loads(resp.data) == {
+        'checksum': checksum,
+        'error': False}
 
 
 def test_stats_ar_mput(client):
@@ -129,7 +136,9 @@ def test_stats_ar_mput(client):
     resp = client.put(
         '/stats/ar_mput/' + stat_id + '/' + qeez_token, data=_data,
         content_type='application/json')
-    assert flask.json.loads(resp.data) == {'checksum': checksum, 'error': False,
+    assert flask.json.loads(resp.data) == {
+        'checksum': checksum,
+        'error': False,
         'job_id': STAT_ID_FMT % (stat_id, qeez_token)}
 
 
@@ -141,7 +150,9 @@ def test_stats_ar_put(client):
     resp = client.put(
         '/stats/ar_put/' + stat_id + '/' + qeez_token, data=_data,
         content_type='application/json')
-    assert flask.json.loads(resp.data) == {'checksum': checksum, 'error': False,
+    assert flask.json.loads(resp.data) == {
+        'checksum': checksum,
+        'error': False,
         'job_id': STAT_ID_FMT % (stat_id, qeez_token)}
 
 

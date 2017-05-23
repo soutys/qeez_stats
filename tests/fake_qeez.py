@@ -26,6 +26,12 @@ def stat_data_save(qeez_token, *args, **kwargs):
     return bool(qeez_token)
 
 
+def stat_data_save_failing(qeez_token, *args, **kwargs):
+    '''Stub failing data save function
+    '''
+    raise IOError('Ooops!')
+
+
 def stat_fn(*args, **kwargs):
     '''Stub stat function
     '''
