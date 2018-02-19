@@ -49,7 +49,7 @@ CFG = dict(
         'SOCKET': REDIS_SOCKET,
         'DB': 2,
     },
-    ENV_PREPARE_FN='qeez.api.models.prepare_env',
+    ENV_PREPARE_FN='qeez.utils.models.prepare_env',
     STAT_SAVE_FN='qeez.api.models.stat_data_save',
     RAVEN_CLI=Client(RAVEN_DSN) if USE_RAVEN and RAVEN_DSN else None,
 )

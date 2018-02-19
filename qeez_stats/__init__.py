@@ -28,7 +28,6 @@ __classifiers__ = [
     # 'Development Status :: 7 - Inactive',
     'Environment :: Other Environment',
     'Intended Audience :: Developers',
-    'Intended Audience :: Developers',
     'License :: OSI Approved :: MIT License',
     'Operating System :: OS Independent',
     'Programming Language :: Python',
