@@ -64,6 +64,9 @@ def prepare_env():
             prep_fun(app_cfg=CFG)
 
 
+prepare_env()
+
+
 def _json_response(data_dc, status=200):
     '''Creates HTTP response object with appropriate headers for JSON data
     '''
