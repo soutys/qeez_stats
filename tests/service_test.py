@@ -127,6 +127,26 @@ def test_stats_put_ok_direct(client):
         'error': False}
 
 
+def test_stats_put_ok_direct_len_3_bad_rst(client):
+    _data = b'["1:2:3:4:5:6:7:8", "9:10:11", ""]'
+    checksum = calc_checksum(_data)
+    resp = client.put(
+        '/stats/put/test_123?sync', data=_data,
+        content_type='application/json')
+    assert flask.json.loads(resp.data) == {'error': True, 'status': 400}
+
+
+def test_stats_put_ok_direct_len_3(client):
+    _data = b'["1:2:3:4:5:6:7:8", "9:10:11", "9"]'
+    checksum = calc_checksum(_data)
+    resp = client.put(
+        '/stats/put/test_123?sync', data=_data,
+        content_type='application/json')
+    assert flask.json.loads(resp.data) == {
+        'checksum': checksum,
+        'error': False}
+
+
 def test_stats_ar_mput(client):
     _data = b'[["1:2:3:4:5:6:7:8", "9:10:11"],' \
         b'["11:12:13:14:15:16:17:18", "19:20:21"]]'

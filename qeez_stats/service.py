@@ -76,30 +76,36 @@ def _json_response(data_dc, status=200):
     return resp
 
 
-def _save_packets(qeez_token, res_dc, async=True):
+def _save_packets(qeez_token, res_dc, sync=False):
     '''Saves data packets (to all possible DBs)
     '''
     save_packets_to_stat(qeez_token, res_dc, redis_conn=get_stat_redis())
-    if async:
-        job = enqueue_stat_save(
-            qeez_token, res_dc, atime=gmtime(), redis_conn=get_save_redis())
-        return bool(job)
+    if sync:
+        return direct_stat_save(qeez_token, res_dc, atime=gmtime())
 
-    return direct_stat_save(qeez_token, res_dc, atime=gmtime())
+    job = enqueue_stat_save(
+        qeez_token, res_dc, atime=gmtime(), redis_conn=get_save_redis())
+    return bool(job)
 
 
-def _save_data(qeez_token, packets, async=True):
+def _save_data(qeez_token, packets, sync=False):
     '''Parses and saves data packets
     '''
     res_dc = {}
     for packet in packets:
-        if isinstance(packet, list) and len(packet) == 2:
-            key, val = packet
-            if packet_split(key, val):
-                res_dc[key] = val
+        packet_len = len(packet)
+        if isinstance(packet, list) and packet_len >= 2:
+            key, val = packet[:2]
+            if packet_len > 2:
+                rst = packet[2]
+                if packet_split(key, val, rst):
+                    res_dc[key] = (val, rst)
+            else:
+                if packet_split(key, val):
+                    res_dc[key] = val
 
     if res_dc:
-        return _save_packets(qeez_token, res_dc, async=async)
+        return _save_packets(qeez_token, res_dc, sync=sync)
 
     return False
 
@@ -143,7 +149,7 @@ def _process_data(req, qeez_token, multi_data=None, stat=None):
     else:
         json_data = [_json]
     checksum = calc_checksum(req.data)
-    if _save_data(qeez_token, json_data, async=('sync' not in req.args)):
+    if _save_data(qeez_token, json_data, sync=('sync' in req.args)):
         resp = {
             'error': False,
             'checksum': checksum}

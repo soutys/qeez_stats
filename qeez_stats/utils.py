@@ -92,15 +92,17 @@ def get_stat_redis():
     return REDIS_CONNS['stat_redis']
 
 
-def packet_split(key, val):
+def packet_split(key, val, rst='0'):
     '''Tests if packet parts are OK, returns splitted parts or None
     packet = ('grp_id:loc_id:cmp_id:rnd_id:cat_id:stp_id:gmr_id:tm_id',
-        'ans_val:ans_tim:pts')
+        'ans_val:ans_tim:pts', '[int:int:...]')
     '''
 
     LOG.debug(
-        'key / val: %s (%s) / %s (%s)', repr(key), repr(type(key)), repr(val),
-        repr(type(val)))
+        'key / val / rst: %s (%s) / %s (%s) / %s (%s)',
+        repr(key), repr(type(key)),
+        repr(val), repr(type(val)),
+        repr(rst), repr(type(rst)))
 
     key_parts = key.split(PACKET_SEP)
     if len(key_parts) != 8:
@@ -115,23 +117,38 @@ def packet_split(key, val):
         LOG.warning('Bad val: %s', repr(val))
         return None
 
-    return (key_parts, val_parts)
+    rst_parts = rst.split(PACKET_SEP)
+    if not all([part.isdigit() for part in rst_parts]):
+        LOG.warning('Bad rst parts: %s', repr(rst_parts))
+        return None
+
+    return (key_parts, val_parts, rst_parts)
 
 
 def decode_raw_packet(raw_packet):
     '''Decodes one raw packet
     '''
-    key, val = raw_packet
+    if not raw_packet:
+        return None
+    raw_packet_len = len(raw_packet)
+    if raw_packet_len == 2:
+        key, val = raw_packet
+        rst = '0'
+    elif raw_packet_len == 3:
+        key, val, rst = raw_packet
+    else:
+        return None
     if isinstance(key, bytes):
         key = to_str(key)
     if isinstance(val, bytes):
         val = to_str(val)
-    parts = packet_split(key, val)
+    if isinstance(rst, bytes):
+        rst = to_str(rst)
+    parts = packet_split(key, val, rst)
     if parts is None:
         return None
-    key_parts, val_parts = tuple(parts)
+    key_parts, val_parts, rst_parts = tuple(parts)
 
-    # TODO: named tuple
     return (
         tuple(int(part) for part in key_parts),
         (
@@ -139,6 +156,7 @@ def decode_raw_packet(raw_packet):
             float(val_parts[1]),
             int(val_parts[2]),
         ),
+        tuple(int(part) for part in rst_parts),
     )
 
 
@@ -146,7 +164,7 @@ def decode_raw_packets(raw_packets):
     '''Decodes multiple raw packets at once
     '''
     return [
-        decode_raw_packet(raw_packet) for raw_packet in raw_packets.items()]
+        decode_raw_packet(raw_packet) for raw_packet in raw_packets]
 
 
 def save_packets_to_stat(qeez_token, res_dc, redis_conn=None):

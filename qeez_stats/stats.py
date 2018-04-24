@@ -14,8 +14,6 @@ from __future__ import (
 import logging
 
 from qeez_stats.utils import (
-    decode_raw_packets,
-    retrieve_packets,
     retrieve_set,
     update_set,
 )
