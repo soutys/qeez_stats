@@ -72,7 +72,7 @@ def test_packet_split_len_2():
     assert utils.packet_split('a:2:3:4:5:6:7:8', '') is None
     assert utils.packet_split('1:2:3:4:5:6:7:8', '1:2') is None
     assert utils.packet_split('1:2:3:4:5:6:7:8', '1:2:3') == \
-        (['1', '2', '3', '4', '5', '6', '7', '8'], ['1', '2', '3'], ['0'])
+        (['1', '2', '3', '4', '5', '6', '7', '8'], ['1', '2', '3'], ['1'])
 
 
 def test_packet_split_len_3():
@@ -88,7 +88,7 @@ def test_decode_raw_packet():
     assert utils.decode_raw_packet(['', '']) is None
     assert utils.decode_raw_packet([b'', b'']) is None
     assert utils.decode_raw_packet([b'1:2:3:4:5:6:7:8', b'1:2:3']) == \
-        ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3), (0,))
+        ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3), (1,))
     assert utils.decode_raw_packet([b'1:2:3:4:5:6:7:8', b'1:2:3', b'9']) == \
         ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3), (9,))
 
@@ -99,21 +99,21 @@ def test_decode_raw_packets():
     assert utils.decode_raw_packets(
         [(b'', b''), (b'1:2:3:4:5:6:7:8', b'1:2:3')]) == [
             None,
-            ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3), (0,))]
+            ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3), (1,))]
 
     assert utils.decode_raw_packets(
         [
             (b'1:2:3:4:5:6:7:8', b'1:2:3'),
             (b'1:2:3:4:5:6:7:8', b'1:2:3', b'9')]) == [
-                ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3), (0,)),
+                ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3), (1,)),
                 ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3), (9,))]
 
     raw_packets = [
         (b'8:7:6:5:4:3:2:1', b'2,3,1:6.5:4'),
         (b'1:2:3:4:5:6:7:8', b'1:2:3')]
     dec_packets = [
-        ((8, 7, 6, 5, 4, 3, 2, 1), ([2, 3, 1], 6.5, 4), (0,)),
-        ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3), (0,))]
+        ((8, 7, 6, 5, 4, 3, 2, 1), ([2, 3, 1], 6.5, 4), (1,)),
+        ((1, 2, 3, 4, 5, 6, 7, 8), ([1], 2.0, 3), (1,))]
     for dec_packet in dec_packets:
         assert dec_packet in utils.decode_raw_packets(raw_packets)
 

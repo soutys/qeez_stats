@@ -75,7 +75,8 @@ def test_bad_request(client):
 
 
 def test_internal_server_error(client):
-    with service.APP.app_context():
+    from qeez_stats.service import APP
+    with APP.test_request_context():
         resp = service.internal_server_error(None)
         assert flask.json.loads(resp.data) == {'error': True, 'status': 500}
 

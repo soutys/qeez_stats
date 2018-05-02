@@ -92,7 +92,7 @@ def get_stat_redis():
     return REDIS_CONNS['stat_redis']
 
 
-def packet_split(key, val, rst='0'):
+def packet_split(key, val, rst='1'):
     '''Tests if packet parts are OK, returns splitted parts or None
     packet = ('grp_id:loc_id:cmp_id:rnd_id:cat_id:stp_id:gmr_id:tm_id',
         'ans_val:ans_tim:pts', '[int:int:...]')
@@ -133,7 +133,7 @@ def decode_raw_packet(raw_packet):
     raw_packet_len = len(raw_packet)
     if raw_packet_len == 2:
         key, val = raw_packet
-        rst = '0'
+        rst = '1'
     elif raw_packet_len == 3:
         key, val, rst = raw_packet
     else:
