@@ -118,7 +118,7 @@ def packet_split(key, val, rst='1'):
         return None
 
     rst_parts = rst.split(PACKET_SEP)
-    if not all([part.isdigit() for part in rst_parts]):
+    if not all([part.strip('-').isdigit() for part in rst_parts]):
         LOG.warning('Bad rst parts: %s', repr(rst_parts))
         return None
 
