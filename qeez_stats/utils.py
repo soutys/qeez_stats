@@ -30,6 +30,8 @@ PACKET_EXPIRE = 1800
 PACKET_SEP = ':'
 REDIS_CONNS = {}
 
+DEF_RST = '1:0'
+
 
 if sys.version_info > (3,):
     def to_bytes(str_buf):  # pragma: PY2to3
@@ -92,7 +94,7 @@ def get_stat_redis():
     return REDIS_CONNS['stat_redis']
 
 
-def packet_split(key, val, rst='1'):
+def packet_split(key, val, rst=DEF_RST):
     '''Tests if packet parts are OK, returns splitted parts or None
     packet = ('grp_id:loc_id:cmp_id:rnd_id:cat_id:stp_id:gmr_id:tm_id',
         'ans_val:ans_tim:pts', '[int:int:...]')
@@ -118,7 +120,7 @@ def packet_split(key, val, rst='1'):
         return None
 
     rst_parts = rst.split(PACKET_SEP)
-    if not all([part.strip('-').isdigit() for part in rst_parts]):
+    if not all([part.lstrip('-').isdigit() for part in rst_parts]):
         LOG.warning('Bad rst parts: %s', repr(rst_parts))
         return None
 
@@ -133,7 +135,7 @@ def decode_raw_packet(raw_packet):
     raw_packet_len = len(raw_packet)
     if raw_packet_len == 2:
         key, val = raw_packet
-        rst = '1'
+        rst = DEF_RST
     elif raw_packet_len == 3:
         key, val, rst = raw_packet
     else:
