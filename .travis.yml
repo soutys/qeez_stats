@@ -1,3 +1,6 @@
+dist: xenial
+sudo: false
+
 branches:
   only:
     - master
@@ -17,4 +20,3 @@ script:
   - py.test tests --doctest-modules --pep8 qeez_stats -v --cov qeez_stats --cov-report term-missing
 after_success:
   - coveralls
-
