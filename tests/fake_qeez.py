@@ -3,14 +3,6 @@
 '''qeez fake modules / methods mock
 '''
 
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-    with_statement,
-)
-
 
 def prepare_env(**kwargs):
     '''Stub prepare environment function

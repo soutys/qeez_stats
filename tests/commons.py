@@ -3,14 +3,6 @@
 '''test commons module
 '''
 
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-    with_statement,
-)
-
 import string
 from random import SystemRandom
 
@@ -30,9 +22,7 @@ class FakeStrictRedis(fakeredis.FakeStrictRedis, StrictRedis):
 def get_redis(_):
     '''Returns fake StrictRedis client instance
     '''
-    fsr = FakeStrictRedis()
-    fsr.connection_pool = None
-    return fsr
+    return FSR
 
 
 def get_token(chars_set=string.ascii_letters, length=10):
@@ -41,3 +31,6 @@ def get_token(chars_set=string.ascii_letters, length=10):
     if length > len(chars_set):
         length = len(chars_set)
     return ''.join(SYS_RND.sample(chars_set, length))
+
+
+FSR = FakeStrictRedis()

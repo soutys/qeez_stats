@@ -3,14 +3,6 @@
 '''Qeez statistics utils module
 '''
 
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-    with_statement,
-)
-
 import importlib
 import inspect
 import logging
@@ -175,7 +167,16 @@ def save_packets_to_stat(qeez_token, res_dc, redis_conn=None):
     if redis_conn is None:
         redis_conn = get_redis(CFG['STAT_REDIS'])
     key = PACKETS_ID_FMT % qeez_token
-    res = redis_conn.hmset(key, res_dc)
+
+    # NOTE: strip rst parts
+    _data = {}
+    for _key, _val in res_dc.items():
+        if isinstance(_val, tuple) and len(_val) == 2:
+            _data[_key] = _val[0]
+        else:
+            _data[_key] = _val
+
+    res = redis_conn.hmset(key, _data)
     redis_conn.expire(key, PACKET_EXPIRE)
     return res
 

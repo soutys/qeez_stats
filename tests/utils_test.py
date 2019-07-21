@@ -3,14 +3,6 @@
 '''qeez_stat.utils test module
 '''
 
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-    with_statement,
-)
-
 import sys
 import string
 from random import SystemRandom

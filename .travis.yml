@@ -4,10 +4,8 @@ branches:
 
 language: python
 python:
-  - "2.7"
-  - "3.4"
-# TBD after fix https://bitbucket.org/pytest-dev/pytest/pull-request/296/astcall-signature-changed-on-35/diff
-#  - "nightly"
+  - "3.7"
+  - "nightly"
 
 install:
   - pip install -U pip

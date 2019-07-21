@@ -14,14 +14,6 @@ $ rqworker --url unix:///tmp/redis.sock?db=1 --name my-worker-nr-x --verbose
 # python manage.py rqworker --name=my-worker-nr-x queue-of-db-1
 '''
 
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-    with_statement,
-)
-
 import logging
 from time import gmtime
 
@@ -68,7 +60,7 @@ def enqueue_stat_save(qeez_token, res_dc, atime=None, redis_conn=None):
     queue = Queue('save', connection=redis_conn)
     return queue.enqueue(
         CFG['STAT_SAVE_FN'], args=(qeez_token, atime, res_dc),
-        timeout=30, result_ttl=30, ttl=-1)
+        timeout=30, result_ttl=30, ttl=7200)
 
 
 def enqueue_stat_calc(stat, qeez_token, redis_conn=None):
@@ -79,12 +71,12 @@ def enqueue_stat_calc(stat, qeez_token, redis_conn=None):
     stat_token = STAT_ID_FMT % (stat, qeez_token)
     queue = Queue('calc', connection=redis_conn)
     stat_append = queue.enqueue(
-        stat_collector, stat, stat_token, timeout=30, result_ttl=-1,
-        ttl=-1, job_id=COLL_ID_FMT % stat)
+        stat_collector, stat, stat_token, timeout=30, result_ttl=7200,
+        ttl=7200, job_id=COLL_ID_FMT % stat)
     _ = stat_append.id
     return queue.enqueue(
-        stat, qeez_token, timeout=30, result_ttl=-1,
-        ttl=-1, job_id=stat_token, depends_on=stat_append)
+        stat, qeez_token, timeout=30, result_ttl=7200,
+        ttl=7200, job_id=stat_token, depends_on=stat_append)
 
 
 def pull_stat_res(stat, qeez_token, redis_conn=None):

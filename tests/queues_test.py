@@ -3,14 +3,6 @@
 '''qeez_stat.queues test module
 '''
 
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-    with_statement,
-)
-
 import sys
 
 from rq.job import Job
@@ -181,11 +173,11 @@ def test_pull_all_stat_res_ok():
     redis_conn = get_redis(CFG['QUEUE_REDIS'])
     queue = Queue('calc', connection=redis_conn)
     job_1 = Job.create(
-        func=stat_id, timeout=30, result_ttl=-1, ttl=-1,
+        func=stat_id, timeout=30, result_ttl=7200, ttl=7200,
         id=queues.STAT_ID_FMT % (stat_id, qeez_token), connection=redis_conn)
     queue.enqueue_job(job_1)
     job_2 = Job.create(
-        func=stat_id, timeout=30, result_ttl=-1, ttl=-1,
+        func=stat_id, timeout=30, result_ttl=7200, ttl=7200,
         id=queues.STAT_ID_FMT % (stat_id, qeez_token), connection=redis_conn)
     queue.enqueue_job(job_2)
 

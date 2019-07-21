@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 '''Qeez statistics service module
@@ -6,14 +6,6 @@
 $ pip install -U .
 $ REDIS_SOCKET=/tmp/redis.sock python -m qeez_stats.service
 '''
-
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-    with_statement,
-)
 
 import logging
 from time import gmtime
